@@ -1,0 +1,48 @@
+import hashlib
+from eth_utils import keccak, to_bytes, encode_hex, is_hex_address
+
+def hash_struct(struct_data):
+    """Hash a struct according to EIP-712"""
+    struct_hash = keccak(b''.join(to_bytes(hexstr=field) for field in struct_data))
+    return encode_hex(struct_hash)
+
+def eip712_domain_separator(name, version, chain_id, verifying_contract):
+    """Compute the EIP-712 domain separator"""
+    domain_type_hash = keccak(b'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
+    name_hash = keccak(to_bytes(text=name))
+    version_hash = keccak(to_bytes(text=version))
+    chain_id_bytes = to_bytes(chain_id)
+    
+    # Ensure verifying_contract is a valid hex address
+    if not is_hex_address(verifying_contract):
+        raise ValueError(f"Invalid Ethereum address: {verifying_contract}")
+    
+    # Remove '0x' prefix if present
+    verifying_contract = verifying_contract.lower().replace('0x', '')
+    
+    verifying_contract_bytes = to_bytes(hexstr=verifying_contract)
+
+    domain_data = [
+        encode_hex(domain_type_hash),
+        encode_hex(name_hash),
+        encode_hex(version_hash),
+        encode_hex(chain_id_bytes),
+        encode_hex(verifying_contract_bytes)
+    ]
+
+    domain_separator = hash_struct(domain_data)
+    return domain_separator
+
+def main():
+    # Example values
+    name = "jobu.ninja"
+    version = "1"
+    chain_id = 10  # Optimism chain ID
+    verifying_contract = "0xcE78E39027A4A646162d3f1dcf917c7DBB69C38E"  # Replace with your contract address
+
+def initialize():
+    main()
+
+    # Calculate the domain separator
+    domain_separator = eip712_domain_separator("jobu.ninja", "1", 10, "0xcE78E39027A4A646162d3f1dcf917c7DBB69C38E")
+    print(f"Domain Separator: {domain_separator}")

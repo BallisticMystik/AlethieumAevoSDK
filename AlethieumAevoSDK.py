@@ -8,7 +8,7 @@ import time
 
 import requests
 import websockets
-from eip712_structs import Address, Boolean, EIP712Struct, Uint, make_domain
+from eip712_domain_separator import Address, Boolean, Uint, make_domain
 from eth_account import Account
 from loguru import logger
 from web3 import Web3
@@ -43,14 +43,26 @@ CONFIG = {
 # timestamp = int(time.time())
 
 
-class Order(EIP712Struct):
-    maker = Address()
-    isBuy = Boolean()
-    limitPrice = Uint(256)
-    amount = Uint(256)
-    salt = Uint(256)
-    instrument = Uint(256)
-    timestamp = Uint(256)
+class Order:
+    def __init__(self, maker, is_buy, limit_price, amount, salt, instrument, timestamp):
+        self.maker = maker
+        self.is_buy = is_buy
+        self.limit_price = limit_price
+        self.amount = amount
+        self.salt = salt
+        self.instrument = instrument
+        self.timestamp = timestamp
+
+    def to_dict(self):
+        return {
+            'maker': self.maker,
+            'isBuy': self.is_buy,
+            'limitPrice': self.limit_price,
+            'amount': self.amount,
+            'salt': self.salt,
+            'instrument': self.instrument,
+            'timestamp': self.timestamp
+        }
 
 
 class AevoClient:
